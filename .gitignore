@@ -1,0 +1,11 @@
+# Zed extension artifacts
+*.wasm
+grammars/hercscript/
+
+# macOS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~
