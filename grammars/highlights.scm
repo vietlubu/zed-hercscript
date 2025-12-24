@@ -99,6 +99,9 @@
 ((identifier) @function.builtin
   (#match? @function.builtin "^(queue|queuesize|queueadd|queueremove|queueopt|queuedel|queueiterator|qicheck|qiget|qiclear)$"))
 
+; User-defined functions (fallback - must be before built-in function_call patterns)
+(function_call (identifier) @function)
+
 ; Built-in functions in function calls - Dialog
 (function_call
   (identifier) @function.builtin
@@ -188,8 +191,6 @@
 (function_call
   (identifier) @function.builtin
   (#match? @function.builtin "^(queue|queuesize|queueadd|queueremove|queueopt|queuedel|queueiterator|qicheck|qiget|qiclear)$"))
-
-
 
 ; NPC definitions
 (npc_name) @string.special
