@@ -1,0 +1,96 @@
+// Hercules Script - Syntax Highlighting Test
+// This file demonstrates different highlighting styles
+
+prontera,150,150,4	script	TestNPC	100,{
+	// ===================================
+	// Built-in Commands (Without Parentheses)
+	// These should highlight in yellow/orange
+	// ===================================
+
+	mes "Welcome to the test!";
+	next;
+	mes "This demonstrates syntax highlighting.";
+	close;
+
+	select "Option 1", "Option 2", "Option 3";
+
+	getitem 501, 10;
+	delitem 502, 5;
+
+	warp "prontera", 150, 150;
+	heal 100, 50;
+
+	setquest 1000;
+	completequest 1000;
+
+	announce "Server announcement", bc_all;
+
+	// ===================================
+	// User-Defined Function Calls (With Parentheses)
+	// These should highlight in blue/cyan
+	// ===================================
+
+	myCustomFunction();
+	calculateDamage();
+	processQuestReward();
+
+	.@result = checkPlayerStatus();
+	.@damage = getDamageValue(100, 50);
+
+	callfunc("MyFunction");
+	callfunc("AnotherScript", .@param1, .@param2);
+
+	// ===================================
+	// Control Flow Keywords
+	// These should highlight in purple/magenta
+	// ===================================
+
+	if (.@result == 1) {
+		mes "Success!";
+	} else {
+		mes "Failed!";
+	}
+
+	for (.@i = 0; .@i < 10; .@i++) {
+		debugmes "Loop iteration: " + .@i;
+	}
+
+	while (.@count > 0) {
+		.@count--;
+	}
+
+	switch (select("Choice 1:Choice 2:Choice 3")) {
+		case 1:
+			mes "You selected choice 1";
+			break;
+		case 2:
+			mes "You selected choice 2";
+			break;
+		case 3:
+			mes "You selected choice 3";
+			break;
+		default:
+			mes "Invalid choice";
+			break;
+	}
+
+	// ===================================
+	// Variables and Data Types
+	// ===================================
+
+	.@localVar = 100;
+	$globalVar = "test";
+	'tempVar = 50;
+	#accountVar = 123;
+
+	// ===================================
+	// Strings and Numbers
+	// Strings in green, Numbers in light blue
+	// ===================================
+
+	.@message = "This is a string";
+	.@number = 12345;
+	.@float = 3.14;
+
+	end;
+}

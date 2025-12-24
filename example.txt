@@ -18,6 +18,7 @@ prontera,90,95,1	script	Jelly	2_F_MAGICMASTER,{
 		mes "[Jelly]";
 		mes "Hey there! Would you help me?";
 		next;
+	  select;
 		switch(select("I'd rather not:What's up?")){
 		case 1:
 			mes "[Jelly]";
