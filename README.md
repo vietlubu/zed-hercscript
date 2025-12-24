@@ -2,7 +2,7 @@
 
 Comprehensive language support for Hercules (herc.ws) scripting language.
 
-## Features
+## Key Features
 
 - **Syntax Highlighting** - Full syntax highlighting for Hercules script
 - **Code Folding** - Fold code blocks

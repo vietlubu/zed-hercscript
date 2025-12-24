@@ -18,18 +18,18 @@ prontera,90,95,1	script	Jelly	2_F_MAGICMASTER,{
 		mes "[Jelly]";
 		mes "Hey there! Would you help me?";
 		next;
-	  select;
+	  select();
 		switch(select("I'd rather not:What's up?")){
-		case 1:
-			mes "[Jelly]";
-			mes "I didn't want your help anyway!";
-			close;
-		case 2:
-			mes "[Jelly]";
-			mes "Those Porings are weirding me out.";
-			mes "Would you kill 3 for me?";
-			setquest 70000; // Adds the quest to your Quest Window.
-			close;
+  		case 1:
+  			mes "[Jelly]";
+  			mes "I didn't want your help anyway!";
+  			close;
+  		case 2:
+  			mes "[Jelly]";
+  			mes "Those Porings are weirding me out.";
+  			mes "Would you kill 3 for me?";
+  			setquest 70000; // Adds the quest to your Quest Window.
+  			close;
 		}
 	} else if (questprogress(70000,HUNTING) == 2) {
 		// ALL monsters killed.
