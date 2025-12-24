@@ -173,3 +173,38 @@ prontera,150,150,4	script	HighlightTest	100,{
 // KEY FIX: select() and all built-in commands with parentheses
 //          now parse correctly and highlight properly! ✅
 // ============================================================
+
+// ============================================================
+// TEST 9: Built-in Functions in Expression Contexts
+// Expected: select, mes, etc. should be highlighted even in expressions
+// This tests the fix for: switch(select("...")) where select was white
+// ============================================================
+
+prontera,155,155,4	script	ExpressionTest	100,{
+	// select() inside switch expression - should be YELLOW/ORANGE
+	switch(select("I'd rather not:What's up?")) {
+		case 1:
+			mes("You selected option 1");
+			break;
+		case 2:
+			mes("You selected option 2");
+			break;
+	}
+
+	// Built-in functions as expression values
+	.@choice = select("Yes:No:Maybe");
+	.@input = input("Enter a number:", 0, 100);
+	
+	// Nested built-in calls in expressions
+	if (select("Continue:Stop") == 1) {
+		mes("Continuing...");
+	}
+
+	// Built-in in ternary
+	.@result = (select("Yes:No") == 1) ? 100 : 0;
+
+	// Multiple built-ins in same expression
+	.@total = getitem(501, 1) + getitem(502, 2);
+
+	end;
+}
