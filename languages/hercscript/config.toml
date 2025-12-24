@@ -1,0 +1,23 @@
+name = "hercscript"
+grammar = "hercscript"
+path_suffixes = ["txt"]
+file_types = ["txt"]
+line_comments = ["//"]
+block_comment = ["/*", "*/"]
+tab_size = 2
+hard_tabs = false
+
+# Auto-closing brackets for hercscript
+brackets = [
+  { start = "{", end = "}", close = true, newline = true },
+  { start = "[", end = "]", close = true, newline = true },
+  { start = "(", end = ")", close = true, newline = true },
+  { start = "\"", end = "\"", close = true, newline = false },
+]
+
+# Code folding support
+[code_folding]
+# Support for #region/#endregion folding markers
+fold_markers = [
+  { start = "//\\s*#region\\b", end = "//\\s*#endregion\\b" }
+]
