@@ -1,185 +1,222 @@
-# Syntax Highlighting Update - Final Status
+# ✅ GIẢI QUYẾT THÀNH CÔNG - select() Highlighting Issue
 
-## Vấn đề đã được giải quyết
+## Vấn đề ban đầu
 
-### ✅ Highlight cho User-Defined Functions
+**Báo cáo:** `select()` với dấu ngoặc KHÔNG được highlight, hiển thị màu trắng thay vì màu vàng cam như `select` không có dấu ngoặc.
 
-**Trước đây:**
-- Chỉ có built-in commands (không có dấu ngoặc) được highlight
-- User-defined functions với dấu ngoặc `myfunction()` KHÔNG được highlight
-
-**Bây giờ:**
-- ✅ User-defined functions được highlight như `@function` (màu xanh dương/cyan)
-- ✅ Built-in commands vẫn được highlight như `@function.builtin` (màu vàng cam)
-
-## Cách hoạt động
-
-### 1. Built-in Commands (Traditional Hercules Syntax)
 ```hercscript
-mes "Hello";           // ✅ Highlight vàng cam (built-in)
-select;                // ✅ Highlight vàng cam (built-in)
-getitem 501, 1;        // ✅ Highlight vàng cam (built-in)
-warp "prontera", 150, 150;  // ✅ Highlight vàng cam (built-in)
+select;           // ✅ Highlight vàng cam (hoạt động)
+select();         // ❌ Màu trắng (KHÔNG hoạt động)
 ```
 
-### 2. User-Defined Functions (With Parentheses)
-```hercscript
-myfunction();          // ✅ Highlight xanh dương (user-defined)
-calculateDamage();     // ✅ Highlight xanh dương (user-defined)
-callfunc("Script");    // ✅ Highlight xanh dương (user-defined)
+## Nguyên nhân gốc rễ
+
+Grammar của tree-sitter-hercscript chỉ hỗ trợ built-in commands theo cú pháp Hercules truyền thống (KHÔNG có dấu ngoặc):
+
+```javascript
+builtin_command: $ => seq(
+    field('name', choice('mes', 'select', 'getitem', ...)),
+    optional(repeat1(choice($.string, $.number, ',')))
+)
 ```
 
-### 3. Control Flow Keywords
-```hercscript
-if (.@x > 0) { }       // ✅ Highlight tím (keyword)
-while (.@i < 10) { }   // ✅ Highlight tím (keyword)
-switch (.@opt) { }     // ✅ Highlight tím (keyword)
-for (.@i = 0; .@i < 10; .@i++) { }  // ✅ Highlight tím (keyword)
+Khi viết `select()`:
+
+- `select` được parse thành `builtin_command` ✓
+- `()` sau nó trở thành **ERROR node** ✗
+- ERROR nodes không thể được highlight bởi queries ✗
+
+## Giải pháp đã áp dụng
+
+### 1. Sửa Grammar để hỗ trợ cả 2 cú pháp
+
+Cập nhật `builtin_command` rule để chấp nhận **HOẶC** simple arguments **HOẶC** parameter_list:
+
+```javascript
+builtin_command: $ => prec(2, seq(
+    field('name', choice(
+        'mes', 'select', 'getitem', ...
+    )),
+    choice(
+        // Với dấu ngoặc (function-call style)
+        $.parameter_list,
+        // Không có dấu ngoặc (traditional Hercules style)
+        optional(repeat1(choice($.string, $.number, ',')))
+    )
+))
 ```
 
-## Giới hạn hiện tại
+### 2. Update Highlights Queries
 
-### ⚠️ Built-in Commands với Dấu Ngoặc (Limited Support)
+Đã có patterns để highlight cả:
 
-Do cách grammar được thiết kế để match với cú pháp Hercules chính thống:
+- `builtin_command` nodes → `@function.builtin`
+- `function_call` nodes cho user-defined functions → `@function`
+
+## Kết quả - ĐÃ HOẠT ĐỘNG! 🎉
+
+### ✅ Built-in Commands - Cả 2 cú pháp đều được hỗ trợ
 
 ```hercscript
-mes();                 // ❌ KHÔNG parse được (ERROR)
-select();              // ❌ KHÔNG parse được (ERROR)
-getitem();             // ❌ KHÔNG parse được (ERROR)
+// Không có dấu ngoặc (traditional)
+mes "Hello";              // ✅ builtin_command → vàng cam
+select;                   // ✅ builtin_command → vàng cam
+select "A", "B";          // ✅ builtin_command → vàng cam
+getitem 501, 1;           // ✅ builtin_command → vàng cam
+
+// Có dấu ngoặc (function-call style)
+mes("Hello");             // ✅ builtin_command → vàng cam
+select();                 // ✅ builtin_command → vàng cam
+getitem(501, 1);          // ✅ builtin_command → vàng cam
+warp("prontera", 150, 150); // ✅ builtin_command → vàng cam
 ```
 
-**Lý do:** Grammar của Hercules Script được thiết kế để built-in commands dùng **KHÔNG có dấu ngoặc**. Đây là cú pháp chính thống của Hercules.
-
-## Best Practices - Khuyến nghị sử dụng
-
-### ✅ ĐÚNG - Nên dùng
+### ✅ User-Defined Functions
 
 ```hercscript
-prontera,150,150,4	script	MyNPC	100,{
-    // Built-in commands: KHÔNG dấu ngoặc
-    mes "Welcome!";
-    select "Option 1", "Option 2";
+// Trong expressions
+.@result = myfunction();  // ✅ function_call → xanh dương
+.@value = calculate(x, y); // ✅ function_call → xanh dương
+
+// Với callfunc
+callfunc("MyScript");     // ✅ builtin_command → vàng cam (callfunc là built-in)
+```
+
+### ⚠️ Giới hạn còn lại
+
+User-defined functions như standalone statements vẫn chưa được hỗ trợ do conflict trong grammar:
+
+```hercscript
+myfunction();             // ❌ ERROR (không parse được)
+
+// Workaround: dùng trong expression hoặc assignment
+.@temp = myfunction();    // ✅ Hoạt động
+```
+
+## Parse Tree Verification
+
+```
+prontera,150,150,4	script	Test	100,{
+    select();
+    mes("Hello");
+    getitem(501, 1);
+}
+
+→ Parse result:
+  (builtin_command [select]
+    (parameter_list))           ✅
+  (builtin_command [mes]
+    (parameter_list
+      (string "Hello")))        ✅
+  (builtin_command [getitem]
+    (parameter_list
+      (number 501)
+      (number 1)))              ✅
+```
+
+## Files Changed
+
+### Tree-sitter Grammar Repository
+
+- **File:** `grammar.js`
+- **Changes:** Modified `builtin_command` to accept `parameter_list`
+- **Commits:**
+  - `cadebed` - feat: allow built-in commands to use parentheses syntax
+  - `337f1b8` - build: regenerate parser with parentheses support
+
+### Zed Extension
+
+- **File:** `extension.toml`
+- **Changes:** Updated grammar commit to `337f1b82a2e13970168b75a3b0262aed1ca7ff15`
+- **Commit:** `e86a3eb` - feat: update grammar to support built-in commands with parentheses
+
+## Testing Instructions
+
+### 1. Install/Update Extension
+
+```bash
+# Uninstall old version
+Cmd+Shift+X → "Hercules Script" → Uninstall
+
+# Install dev extension
+Cmd+Shift+P → "zed: install dev extension"
+→ Select: /Users/vietlubu/Projects/vietlubu/extensions/zed-hercscript
+
+# Reload Zed
+Cmd+Shift+P → "zed: reload window"
+```
+
+### 2. Test với file `.herc`
+
+```hercscript
+prontera,150,150,4	script	TestNPC	100,{
+    // Tất cả các dòng sau đây nên có highlight đúng:
+
+    // Built-in không có dấu ngoặc - vàng cam
+    mes "Test 1";
+    select "Option A", "Option B";
     getitem 501, 1;
 
-    // User-defined functions: CÓ dấu ngoặc
-    .@result = myCustomFunction();
-    processQuestReward();
-    callfunc("AnotherScript");
+    // Built-in CÓ dấu ngoặc - vàng cam (FIXED!)
+    mes("Test 2");
+    select();
+    getitem(502, 2);
+    warp("prontera", 150, 150);
 
-    // Control flow
-    if (.@result) {
-        mes "Success!";
-    }
+    // User-defined trong expressions - xanh dương
+    .@result = myCustomFunction();
+    .@value = calculate(100, 50);
 
     end;
 }
 ```
 
-### ❌ TRÁNH - Không nên dùng
+## Summary - Tổng kết
+
+| Syntax                     | Status Trước         | Status Bây giờ   | Highlight Color |
+| -------------------------- | -------------------- | ---------------- | --------------- |
+| `select`                   | ✅ Works             | ✅ Works         | 🟧 Vàng cam     |
+| `select()`                 | ❌ Error (màu trắng) | ✅ **FIXED!**    | 🟧 Vàng cam     |
+| `mes "text"`               | ✅ Works             | ✅ Works         | 🟧 Vàng cam     |
+| `mes("text")`              | ❌ Error             | ✅ **FIXED!**    | 🟧 Vàng cam     |
+| `getitem 501,1`            | ✅ Works             | ✅ Works         | 🟧 Vàng cam     |
+| `getitem(501,1)`           | ❌ Error             | ✅ **FIXED!**    | 🟧 Vàng cam     |
+| `.@x = func()`             | ✅ Works             | ✅ Works         | 🟦 Xanh dương   |
+| `myfunction()` (statement) | ❌ Error             | ❌ Not supported | ⚪ N/A          |
+
+## Recommendation - Khuyến nghị
+
+### ✅ Best Practice - Nên dùng
+
+Hercules Script cho phép cả 2 cách, nhưng khuyến nghị:
 
 ```hercscript
-// KHÔNG dùng dấu ngoặc cho built-in commands
-mes();                 // ❌ Sẽ lỗi parse
-select();              // ❌ Sẽ lỗi parse
-getitem(501, 1);       // ❌ Sẽ lỗi parse
+// Built-in commands: Dùng traditional syntax (rõ ràng hơn)
+mes "Welcome!";
+select "Yes", "No";
+getitem 501, 1;
+
+// Nếu muốn dùng dấu ngoặc: BÂY GIỜ ĐÃ HOẠT ĐỘNG!
+mes("Alternative syntax");
+select();
+getitem(501, 1);
+
+// User-defined: Luôn dùng trong expressions
+.@result = myfunction();
+callfunc("ScriptName");
 ```
-
-## Technical Details - Chi tiết kỹ thuật
-
-### Highlights Query Pattern Order
-
-File `highlights.scm` sử dụng pattern matching theo thứ tự:
-
-1. **Fallback pattern** (áp dụng cho TẤT CẢ function calls):
-   ```scheme
-   (function_call (identifier) @function)
-   ```
-
-2. **Built-in specific patterns** (override cho built-ins):
-   ```scheme
-   (function_call
-     (identifier) @function.builtin
-     (#match? @function.builtin "^(mes|select|getitem|...)$"))
-   ```
-
-3. **Kết quả:**
-   - Built-in functions → match cả 2 patterns, nhưng `@function.builtin` được ưu tiên
-   - User-defined functions → chỉ match pattern 1, được highlight như `@function`
-
-## Files Updated
-
-### Tree-sitter Grammar Repository
-- `queries/highlights.scm` - Added user-defined function pattern
-- Commit: `89a272e25e75bed7388b616afd78736ad24b4a13`
-
-### Zed Extension
-- `extension.toml` - Updated grammar commit reference
-- `grammars/highlights.scm` - Synced with tree-sitter repository
-- `SYNTAX_HIGHLIGHTING.md` - Complete documentation
-- `test-highlight.herc` - Demo/test file
-- Commits: `055b346`, `baedd52`
-
-## Testing
-
-Để test highlighting, sử dụng file `test-highlight.herc` trong extension directory:
-
-```bash
-# Open in Zed
-zed extensions/zed-hercscript/test-highlight.herc
-```
-
-Hoặc tạo file test của riêng bạn với extension `.herc`
-
-## Màu sắc theo Theme
-
-Màu sắc cụ thể phụ thuộc vào theme của Zed, nhưng thường:
-
-| Element | Capture | Màu thường thấy |
-|---------|---------|----------------|
-| Built-in functions | `@function.builtin` | Vàng cam (Orange/Yellow) |
-| User functions | `@function` | Xanh dương (Blue/Cyan) |
-| Keywords | `@keyword` | Tím (Purple/Magenta) |
-| Strings | `@string` | Xanh lá (Green) |
-| Numbers | `@number` | Xanh nhạt (Light Blue) |
-| Comments | `@comment` | Xám (Gray) |
-
-## Kết luận
-
-✅ **Hoàn thành:**
-- User-defined functions bây giờ được highlight đúng cách
-- Built-in commands vẫn giữ highlight riêng biệt
-- Documentation đầy đủ về cách sử dụng
-
-⚠️ **Lưu ý:**
-- Tuân thủ cú pháp Hercules chính thống: built-ins không có dấu ngoặc
-- User-defined functions nên dùng có dấu ngoặc để dễ phân biệt
-
-📚 **Tài liệu tham khảo:**
-- `SYNTAX_HIGHLIGHTING.md` - Hướng dẫn chi tiết
-- `test-highlight.herc` - File demo/test
-- [Tree-sitter Grammar](https://github.com/vietlubu/tree-sitter-hercscript)
-- [Zed Extension](https://github.com/vietlubu/zed-hercscript)
-
-## Next Steps - Cài đặt/Update
-
-1. **Uninstall extension cũ** (nếu có):
-   - Mở Zed → `Cmd+Shift+X`
-   - Tìm "Hercules Script" → Uninstall
-
-2. **Install dev extension mới:**
-   - `Cmd+Shift+P` → `zed: install dev extension`
-   - Chọn: `/Users/vietlubu/Projects/vietlubu/extensions/zed-hercscript`
-
-3. **Reload Zed:**
-   - `Cmd+Shift+P` → `zed: reload window`
-
-4. **Test:**
-   - Mở file `.herc` bất kỳ
-   - Kiểm tra highlighting cho cả built-in và user-defined functions
 
 ---
 
+## Kết luận
+
+✅ **VẤN ĐỀ ĐÃ ĐƯỢC GIẢI QUYẾT HOÀN TOÀN**
+
+- `select()`, `mes()`, và tất cả built-in commands với dấu ngoặc giờ đây được parse và highlight chính xác
+- Grammar được cập nhật để hỗ trợ cả 2 cú pháp Hercules
+- Tất cả tests đều pass
+- Extension đã sẵn sàng để sử dụng
+
 **Date:** 2024-12-24
 **Version:** 0.3.0
-**Status:** ✅ Complete
+**Status:** ✅ RESOLVED - select() highlighting now works!
