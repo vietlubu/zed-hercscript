@@ -203,7 +203,9 @@
 (position) @constant
 
 ; Variables and identifiers
-(identifier) @variable
+; NOTE: Removed general (identifier) @variable pattern as it overrides
+; more specific patterns like @function.builtin in function_call contexts.
+; Identifiers will be highlighted by their context-specific patterns instead.
 
 ; Literals
 (string) @string
