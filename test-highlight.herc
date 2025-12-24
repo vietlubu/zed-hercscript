@@ -1,15 +1,17 @@
+// ============================================================
 // Hercules Script - Syntax Highlighting Test
-// This file demonstrates different highlighting styles
+// Test file to verify select() and other built-in highlighting
+// ============================================================
 
-prontera,150,150,4	script	TestNPC	100,{
-	// ===================================
-	// Built-in Commands (Without Parentheses)
-	// These should highlight in yellow/orange
-	// ===================================
+prontera,150,150,4	script	HighlightTest	100,{
+	// ============================================================
+	// TEST 1: Built-in Commands WITHOUT Parentheses
+	// Expected: All should be highlighted in YELLOW/ORANGE
+	// ============================================================
 
-	mes "Welcome to the test!";
+	mes "Welcome to the highlight test!";
 	next;
-	mes "This demonstrates syntax highlighting.";
+	mes "Testing built-in commands...";
 	close;
 
 	select "Option 1", "Option 2", "Option 3";
@@ -25,34 +27,55 @@ prontera,150,150,4	script	TestNPC	100,{
 
 	announce "Server announcement", bc_all;
 
-	// ===================================
-	// User-Defined Function Calls (With Parentheses)
-	// These should highlight in blue/cyan
-	// ===================================
+	// ============================================================
+	// TEST 2: Built-in Commands WITH Parentheses (FIXED!)
+	// Expected: All should be highlighted in YELLOW/ORANGE
+	// This is the main fix - these should now work!
+	// ============================================================
 
-	myCustomFunction();
-	calculateDamage();
-	processQuestReward();
+	mes("This should be highlighted now!");
+	next();
+	close();
 
-	.@result = checkPlayerStatus();
-	.@damage = getDamageValue(100, 50);
+	select();  // <- THIS WAS THE ORIGINAL ISSUE - NOW FIXED!
+	select("Option A", "Option B");
 
-	callfunc("MyFunction");
-	callfunc("AnotherScript", .@param1, .@param2);
+	getitem(501, 1);
+	delitem(502, 1);
 
-	// ===================================
-	// Control Flow Keywords
-	// These should highlight in purple/magenta
-	// ===================================
+	warp("prontera", 150, 150);
+	heal(100, 100);
+
+	setquest(2000);
+	completequest(2000);
+
+	announce("Test message", bc_all);
+
+	// ============================================================
+	// TEST 3: User-Defined Functions in Expressions
+	// Expected: Function names in BLUE/CYAN
+	// ============================================================
+
+	.@result = myCustomFunction();
+	.@damage = calculateDamage(100, 50);
+	.@value = processData();
+
+	.@x = getPlayerLevel();
+	.@y = checkQuestStatus();
+
+	// ============================================================
+	// TEST 4: Control Flow Keywords
+	// Expected: Keywords in PURPLE/MAGENTA
+	// ============================================================
 
 	if (.@result == 1) {
-		mes "Success!";
+		mes("Success!");
 	} else {
-		mes "Failed!";
+		mes("Failed!");
 	}
 
 	for (.@i = 0; .@i < 10; .@i++) {
-		debugmes "Loop iteration: " + .@i;
+		debugmes("Loop iteration: " + .@i);
 	}
 
 	while (.@count > 0) {
@@ -61,36 +84,92 @@ prontera,150,150,4	script	TestNPC	100,{
 
 	switch (select("Choice 1:Choice 2:Choice 3")) {
 		case 1:
-			mes "You selected choice 1";
+			mes("You selected choice 1");
 			break;
 		case 2:
-			mes "You selected choice 2";
+			mes("You selected choice 2");
 			break;
 		case 3:
-			mes "You selected choice 3";
+			mes("You selected choice 3");
 			break;
 		default:
-			mes "Invalid choice";
+			mes("Invalid choice");
 			break;
 	}
 
-	// ===================================
-	// Variables and Data Types
-	// ===================================
+	// ============================================================
+	// TEST 5: Variables
+	// Expected: Variable prefixes and names highlighted
+	// ============================================================
 
-	.@localVar = 100;
-	$globalVar = "test";
-	'tempVar = 50;
-	#accountVar = 123;
+	.@localVar = 100;           // Local variable
+	$globalVar = "test";        // Global variable
+	'tempVar = 50;              // Temporary variable
+	#accountVar = 123;          // Account variable
+	##instanceVar = 456;        // Instance variable
 
-	// ===================================
-	// Strings and Numbers
-	// Strings in green, Numbers in light blue
-	// ===================================
+	// ============================================================
+	// TEST 6: Data Types
+	// Expected: Strings in GREEN, Numbers in LIGHT BLUE
+	// ============================================================
 
 	.@message = "This is a string";
 	.@number = 12345;
 	.@float = 3.14;
 
+	// ============================================================
+	// TEST 7: Mixed Usage - Real-world Example
+	// Expected: Proper highlighting for all elements
+	// ============================================================
+
+	mes("Starting quest check...");
+
+	.@questId = 1001;
+	.@status = checkQuestProgress(.@questId);
+
+	if (.@status == 1) {
+		mes("Quest completed!");
+		completequest(.@questId);
+		getitem(501, 5);
+		announce("Player completed the quest!", bc_all);
+	} else {
+		mes("Quest in progress...");
+		mes "Continue your adventure!";  // Mix of styles
+	}
+
+	// ============================================================
+	// TEST 8: All Built-in Command Styles Together
+	// Expected: All highlighted as built-in (YELLOW/ORANGE)
+	// ============================================================
+
+	// Traditional style
+	mes "Test 1";
+	select "A", "B";
+	getitem 501, 1;
+
+	// Function-call style (NOW WORKS!)
+	mes("Test 2");
+	select();
+	getitem(502, 1);
+
+	// Mixed in same script - both should work!
+	warp "prontera", 150, 150;
+	warp("morocc", 100, 100);
+
 	end;
 }
+
+// ============================================================
+// SUMMARY OF EXPECTED RESULTS:
+// ============================================================
+// 🟧 YELLOW/ORANGE: All built-in commands (mes, select, getitem, etc.)
+//                   - Works with AND without parentheses now!
+// 🟦 BLUE/CYAN:     User-defined functions (myCustomFunction, etc.)
+// 🟪 PURPLE:        Keywords (if, else, for, while, switch, case, etc.)
+// 🟩 GREEN:         String literals
+// 🔵 LIGHT BLUE:    Numbers
+// ⚪ GRAY:          Comments (like this one)
+//
+// KEY FIX: select() and all built-in commands with parentheses
+//          now parse correctly and highlight properly! ✅
+// ============================================================
