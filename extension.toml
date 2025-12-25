@@ -8,4 +8,4 @@ repository = "https://github.com/vietlubu/zed-hercscript"
 
 [grammars.hercscript]
 repository = "https://github.com/vietlubu/tree-sitter-hercscript"
-rev = "44aaa2d"
+rev = "4085d39df643d39d96c7a47c23e628cf54ad3f95"
