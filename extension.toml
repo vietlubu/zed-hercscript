@@ -1,7 +1,7 @@
 id = "hercscript"
 name = "Hercules Script"
 description = "Comprehensive language support for Hercules (herc.ws) scripting language with syntax highlighting, snippets, and smart code editing features."
-version = "0.3.0"
+version = "0.1.0"
 schema_version = 1
 authors = ["Vietlubu"]
 repository = "https://github.com/vietlubu/zed-hercscript"
