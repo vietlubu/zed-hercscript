@@ -1,18 +1,9 @@
 ; Outline structure for Hercules Script
+; Simplified to avoid field name errors
 
 ; Script definitions
 (script_def
-  npc_name: (npc_name) @name) @item
-
-; Function calls (as context)
-(function_stmt
-  (identifier) @name) @context
-
-; Control flow structures
-(if_stmt) @context
-(switch_stmt) @context
-(for_stmt) @context
-(while_stmt) @context
+  (npc_name) @name) @item
 
 ; Labels
 (label) @name
