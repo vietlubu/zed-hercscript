@@ -199,7 +199,9 @@
 (position) @constant
 
 ; Variables and identifiers
-(identifier) @variable
+; Variables and identifiers
+; DISABLED: This catch-all pattern overrides @function.builtin captures above
+; (identifier) @variable
 
 ; Literals
 (string) @string
