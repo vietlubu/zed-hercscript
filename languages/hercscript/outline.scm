@@ -5,7 +5,7 @@
   npc_name: (npc_name) @name) @item
 
 ; Function calls (as context)
-(function_call
+(function_stmt
   (identifier) @name) @context
 
 ; Control flow structures

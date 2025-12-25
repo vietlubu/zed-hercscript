@@ -14,7 +14,7 @@
 
 ; Indent script and function definitions
 (script_def) @indent
-(function_call) @indent
+(function_stmt) @indent
 
 ; Dedent closing braces
 "}" @outdent

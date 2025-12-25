@@ -2,7 +2,7 @@
 ; Ultra-minimal version to avoid pattern errors
 
 ; Functions
-(function_call) @function.around
+(function_stmt) @function.around
 
 ; Scripts
 (script_def) @function.around
