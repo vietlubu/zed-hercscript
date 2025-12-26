@@ -208,6 +208,7 @@
 (number) @number
 
 ; Operators (as nodes, not literals)
+(unary) @operator
 (compareop) @operator
 (logicalop) @operator
 (bitwiseop) @operator

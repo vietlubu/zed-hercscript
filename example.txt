@@ -13,6 +13,7 @@
 // 70000,0,1002,3,0,0,0,0,"3 Splats Please!"
 
 prontera,90,95,1	script	Jelly	2_F_MAGICMASTER,{
+	// Test unary operators
 	if (!questprogress(70000)) {
 		// Quest not yet started.
 		mes "[Jelly]";
@@ -46,6 +47,14 @@ prontera,90,95,1	script	Jelly	2_F_MAGICMASTER,{
 		mes "There's still some left!";
 		close;
 	}
+
+	// More unary operator tests
+	.@test = -5;
+	.@result = ~.@test;
+	if (!.@result && !questprogress(70001)) {
+		mes "Testing unary operators: !, -, ~";
+	}
+
 	close;
 	end;
 }
